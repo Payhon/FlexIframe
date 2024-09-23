@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlexIframe 开发测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <h1>FlexIframe 开发测试</h1>
+    <p>这是开发测试页面。下面将显示一个使用 FlexIframe 嵌入的子页面。</p>
+    <div id="iframe-container"></div>
+
+    <script src="../dist/flex-iframe.umd.js"></script>
+    <script>
+        FlexIframe.mount('child.html', '#iframe-container');
+    </script>
+</body>
+</html>
