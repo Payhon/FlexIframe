@@ -17,22 +17,32 @@ namespace FlexIframe {
     childEventHandlers.forEach(handler => handler(eventName, eventData));
   }
 
+  // 封装发送消息到父页面的方法
+  function sendMessageToParent(type: string, data: any) {
+    window.parent.postMessage({
+      type: type,
+      source: 'flex-iframe-child', // 新增 source 参数
+      ...data
+    }, '*');
+  }
+
   // 发送事件到父页面的方法
   export function sendEventToParent(eventName: string, eventData: any) {
-    window.parent.postMessage({
-      type: 'customEvent',
-      eventName: eventName,
-      eventData: eventData
-    }, '*');
+    sendMessageToParent('customEvent', { eventName, eventData });
   }
 
   // 父页面代码 (原 parentInit 函数，现在改名为 childIframeMount)
   function childIframeMount(iframeUrl: string, container?: Element | string, isApiMount: boolean = false) {
+    // 将相对路径转换为绝对路径
+    if (!iframeUrl.startsWith('http://') && !iframeUrl.startsWith('https://')) {
+        iframeUrl = new URL(iframeUrl, window.location.origin).toString();
+    }
+
     // 给 iframe URL 添加查询参数
     const url = new URL(iframeUrl);
     url.searchParams.set('flexIframeEmbedded', 'true');
     
-    // 创建 iframe ���素
+    // 创建 iframe 元素
     const iframe = document.createElement('iframe');
     iframe.src = url.toString();
     iframe.style.width = '100%';
@@ -56,6 +66,10 @@ namespace FlexIframe {
 
     // 监听来自子页面的消息
     const messageHandler = (event: MessageEvent) => {
+      if (event.data.source !== 'flex-iframe-child') {
+        return; // 如果来源不是 flex-iframe-child，直接返回
+      }
+      console.log('Received message:', event.data);
       if (event.data.type === 'flexIframeChildReady') {
         if (event.data.url === iframe.src) {
           console.log('Child iframe is ready:', event.data.url);
@@ -88,7 +102,7 @@ namespace FlexIframe {
             window.open(event.data.url);
             break;
           
-          case 'location.href':
+          case 'urlChange':
             window.location.href = event.data.url;
             break;
           
@@ -113,21 +127,14 @@ namespace FlexIframe {
     (window as any).isFlexIframeChild = true;
 
     // 发准备就绪消息
-    window.parent.postMessage({
-      type: 'flexIframeChildReady',
-      url: window.location.href
-    }, '*');
+    sendMessageToParent('flexIframeChildReady', { url: window.location.href });
 
     // 发送页面高度
     function sendHeight() {
-      window.parent.postMessage({
-        type: 'resize',
-        height: document.documentElement.scrollHeight
-      }, '*');
+      sendMessageToParent('resize', { height: document.documentElement.scrollHeight });
     }
 
     // 初始发送高度，并在窗口大小改变时重新发送
-    sendHeight();
     window.addEventListener('resize', sendHeight);
 
     // 拦截链接点击
@@ -135,11 +142,10 @@ namespace FlexIframe {
       const target = e.target as HTMLElement;
       if (target.tagName === 'A') {
         e.preventDefault();
-        window.parent.postMessage({
-          type: 'navigate',
+        sendMessageToParent('navigate', {
           method: 'click',
           url: (target as HTMLAnchorElement).href
-        }, '*');
+        });
       }
     });
 
@@ -147,28 +153,26 @@ namespace FlexIframe {
     const originalOpen = window.open;
     window.open = function(url?: string | URL, target?: string, features?: string) {
       if (url) {
-        window.parent.postMessage({
-          type: 'navigate',
+        sendMessageToParent('navigate', {
           method: 'window.open',
           url: url.toString()
-        }, '*');
+        });
         return null;
       }
       return originalOpen.apply(this, arguments as any);
     };
 
-    // 重写 location.href
-    const originalHref = Object.getOwnPropertyDescriptor(window.location, 'href')!;
-    Object.defineProperty(window.location, 'href', {
-      set: function(url) {
-        window.parent.postMessage({
-          type: 'navigate',
-          method: 'location.href',
-          url: url
-        }, '*');
-        return originalHref.set!.call(this, url);
-      },
-      get: originalHref.get
+    (window as any).$location = new Proxy(Object.create(window.location), {
+      set (target, key, value) {
+        if (key === 'href' && (window as any).isFlexIframeChild) {
+          sendMessageToParent('navigate', {
+            method: 'urlChange',
+            url: value
+          });
+          return true;
+        }
+        return (window as any).location[key] = value
+      }
     });
 
     // 将 sendEventToParent 方法添加到全局 window 对象
@@ -218,28 +222,7 @@ namespace FlexIframe {
     return childIframeMount(iframeUrl, container, true);
   }
 
-  // 添加 Vue 组件
-  export const VueComponent = FlexIframeComponent;
-
-  // 添加 Vue 2 组件
-  export const Vue2Component = FlexIframeVue2Component;
-
-  // 添加 React 组件
-  export const ReactComponent: typeof FlexIframeReactComponent = FlexIframeReactComponent;
-
-  // 添加子页面组件
-  export const ChildVueComponent = FlexIframeChildComponent;
-  export const ChildVue2Component = FlexIframeChildVue2Component;
-  export const ChildReactComponent: typeof FlexIframeChildReactComponent = FlexIframeChildReactComponent;
 }
-
-// 导入 Vue 和 React 组件
-import FlexIframeComponent from './FlexIframe.vue';
-import FlexIframeVue2Component from './FlexIframeVue2.vue';
-import FlexIframeReactComponent from './FlexIframeReact';
-import FlexIframeChildComponent from './FlexIframeChildVue.vue';
-import FlexIframeChildVue2Component from './FlexIframeChildVue2.vue';
-import FlexIframeChildReactComponent from './FlexIframeChildReact';
 
 // 自动执行
 FlexIframe.init();
@@ -252,13 +235,3 @@ export default FlexIframe;
 
 // 显式导出类型
 export type { ChildEventHandler };
-
-// 添加组件的导出
-export { 
-  FlexIframeComponent, 
-  FlexIframeVue2Component, 
-  FlexIframeReactComponent,
-  FlexIframeChildComponent,
-  FlexIframeChildVue2Component,
-  FlexIframeChildReactComponent
-};

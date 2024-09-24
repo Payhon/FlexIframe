@@ -1,15 +1,15 @@
 {
-  "name": "flex-iframe",
+  "name": "@payhon/flex-iframe",
   "version": "1.0.0",
   "description": "A flexible iframe library for seamless integration of third-party content",
-  "homepage": "https://github.com/payhon/flex-iframe",
+  "homepage": "https://github.com/payhon/FlexIframe",
   "repository": {
     "type": "git",
-    "url": "https://github.com/payhon/flex-iframe.git"
+    "url": "git+https://github.com/payhon/FlexIframe.git"
   },
-  "main": "dist/flex-iframe.umd.js",
-  "module": "dist/flex-iframe.es.js",
-  "unpkg": "dist/flex-iframe.umd.min.js",
+  "main": "dist/index.umd.js",
+  "module": "dist/index.es.js",
+  "unpkg": "dist/index.umd.min.js",
   "types": "dist/index.d.ts",
   "files": [
     "dist"
@@ -18,7 +18,7 @@
     "dev": "vite",
     "build:types": "tsc --emitDeclarationOnly --outDir dist",
     "build:js": "vite build",
-    "build": "npm run build:types && npm run build:js",
+    "build": "npm run build:js && npm run build:types",
     "preview": "vite preview",
     "test": "jest"
   },

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FlexIframe 父页面演示</title>
+    <title>FlexIframe 父页面</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -16,13 +16,37 @@
     </style>
 </head>
 <body>
-    <h1>FlexIframe 父页面演示</h1>
-    <p>这是父页面的内容。下面将显示一个使用 FlexIframe 嵌入的子页面。</p>
-    <div id="iframe-container"></div>
+    <h1>FlexIframe 父页面</h1>
+    <div class="flex-iframe"></div>
 
-    <script src="../dist/flex-iframe.umd.js"></script>
+    <script src="../dist/flex-iframe.umd.js" data-iframe-url="./child.html" data-iframe-position=".flex-iframe"></script>
     <script>
-        FlexIframe.init();
+        window.addEventListener('message', (event) => {
+            // 检查消息来源
+            if (event.data.source !== 'flex-iframe-child') {
+                return; // 如果来源不是 flex-iframe-child，直接返回
+            }
+
+            // 处理来自子页面的消息
+            switch (event.data.type) {
+                case 'flexIframeChildReady':
+                    console.log('子页面已准备好:', event.data.url);
+                    break;
+                case 'customEvent':
+                    console.log('自定义事件:', event.data.eventName, event.data.eventData);
+                    break;
+                case 'resize':
+                    console.log('子页面高度:', event.data.height);
+                    // 这里可以处理高度调整逻辑
+                    break;
+                case 'navigate':
+                    console.log('导航请求:', event.data.method, event.data.url);
+                    // 处理导航请求
+                    break;
+                default:
+                    console.warn('未知消息类型:', event.data.type);
+            }
+        });
     </script>
 </body>
 </html>

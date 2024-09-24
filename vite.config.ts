@@ -1,63 +1,40 @@
 import { defineConfig } from 'vite';
-import { resolve } from 'path';
 import vue from '@vitejs/plugin-vue';
 import react from '@vitejs/plugin-react';
-import terser from '@rollup/plugin-terser';
+import { terser } from 'rollup-plugin-terser';
 
 export default defineConfig({
   plugins: [vue(), react()],
   build: {
     lib: {
-      entry: resolve(__dirname, 'src/index.ts'),
-      name: 'FlexIframe',
+      entry: {
+        'index': './src/index.ts',
+        'vue2/index': './src/vue2/index.ts',
+        'vue2/child': './src/vue2/child.ts',
+        'vue3/index': './src/vue3/index.ts',
+        'vue3/child': './src/vue3/child.ts',
+        'react/index': './src/react/index.tsx',
+        'react/child': './src/react/child.tsx',
+      },
       formats: ['es', 'umd'],
-      fileName: (format) => `flex-iframe.${format}.js`,
+      fileName: (format, entryName) => `${entryName}.${format}.js`,
     },
+    outDir: 'dist',
     rollupOptions: {
       external: ['vue', 'react'],
-      output: [
-        {
-          format: 'umd',
-          name: 'FlexIframe',
-          entryFileNames: 'flex-iframe.umd.js',
-          globals: {
-            vue: 'Vue',
-            react: 'React',
+      output: {
+        globals: {
+          vue: 'Vue',
+          react: 'React',
+        },
+      },
+      plugins: [
+        terser({
+          compress: {
+            drop_console: true,
           },
-        },
-        {
-          format: 'umd',
-          name: 'FlexIframe',
-          entryFileNames: 'flex-iframe.umd.min.js',
-          plugins: [terser({
-            mangle: true,
-            compress: true
-          })],
-          globals: {
-            vue: 'Vue',
-            react: 'React',
-          },
-        },
-        {
-          format: 'es',
-          entryFileNames: 'flex-iframe.es.js',
-        },
-        {
-          format: 'es',
-          entryFileNames: 'flex-iframe.es.min.js',
-          plugins: [terser({
-            mangle: true,
-            compress: true
-          })],
-        },
+        }),
       ],
     },
-    minify: false,
-    sourcemap: true,
-    target: 'es2015',
   },
-  server: {
-    open: true, // 自动打开浏览器
-  },
-  publicDir: 'test', // 将 test 目录作为静态资源目录
 });

@@ -3,7 +3,7 @@
 </template>
 
 <script>
-import { FlexIframe } from './index';
+import { FlexIframe } from '../index';
 
 export default {
   name: 'FlexIframeVue2',

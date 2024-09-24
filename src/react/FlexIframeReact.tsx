@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { FlexIframe, ChildEventHandler } from './index';
+import { FlexIframe, ChildEventHandler } from '../index';
 
 interface FlexIframeReactProps {
   iframeUrl: string;

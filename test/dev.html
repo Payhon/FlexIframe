@@ -19,10 +19,6 @@
     <h1>FlexIframe 开发测试</h1>
     <p>这是开发测试页面。下面将显示一个使用 FlexIframe 嵌入的子页面。</p>
     <div id="iframe-container"></div>
-
-    <script src="../dist/flex-iframe.umd.js"></script>
-    <script>
-        FlexIframe.mount('child.html', '#iframe-container');
-    </script>
+    <script src="../dist/flex-iframe.umd.js" data-iframe-url="./child.html" data-iframe-position="#iframe-container"></script>
 </body>
 </html>

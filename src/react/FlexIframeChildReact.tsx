@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { FlexIframe } from './index';
+import { FlexIframe } from '../index';
 
 interface FlexIframeChildReactProps {
   children?: React.ReactNode;

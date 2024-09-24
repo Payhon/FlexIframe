@@ -30,13 +30,12 @@
         <p>您可以尝试调整浏览器窗口大小，观察 iframe 如何自动调整高度。</p>
         <a href="https://example.com" target="_blank">测试链接</a>
         <button onclick="window.open('https://example.com')">测试 window.open</button>
-        <button onclick="window.location.href='https://example.com'">测试 location.href</button>
+        <button onclick="window.$location.href='https://example.com'">测试 location.href</button>
         <button onclick="sendCustomEvent()">发送自定义事件</button>
     </div>
 
-    <script src="../dist/flex-iframe.umd.js"></script>
+    <script src="../dist/flex-iframe.umd.js" data-script-at="child"></script>
     <script>
-        FlexIframe.init();
 
         function sendCustomEvent() {
             FlexIframe.sendEventToParent('testEvent', { message: '这是一个自定义事件' });

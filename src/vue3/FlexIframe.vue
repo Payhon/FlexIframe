@@ -4,7 +4,7 @@
 
 <script lang="ts">
 import { defineComponent, onMounted, ref, PropType } from 'vue';
-import { FlexIframe, ChildEventHandler } from './index';
+import { FlexIframe, ChildEventHandler } from '../index';
 
 export default defineComponent({
   name: 'FlexIframe',
